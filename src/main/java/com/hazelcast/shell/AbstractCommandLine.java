@@ -1,5 +1,3 @@
-package com.hazelcast.shell;
-
 /*
  * Copyright 2020 Hazelcast Inc.
  *
@@ -15,21 +13,20 @@ package com.hazelcast.shell;
  * specific language governing permissions and limitations under the License.
  */
 
-import picocli.CommandLine;
+package com.hazelcast.shell;
 
-import java.io.IOException;
-import java.util.Properties;
+import java.io.PrintStream;
 
 /**
- * Implementation of {@link CommandLine.IVersionProvider} for providing version information.
+ * Abstract command line class. The methods and properties in this class are shared in other commandline implementations.
  */
-public class VersionProvider implements CommandLine.IVersionProvider {
+public abstract class AbstractCommandLine implements Runnable {
 
-    public VersionProvider() {
-    }
+    protected final PrintStream out;
+    protected final PrintStream err;
 
-    @Override
-    public String[] getVersion() {
-        return new String[]{"1.0"};
+    public AbstractCommandLine(PrintStream out, PrintStream err) {
+        this.out = out;
+        this.err = err;
     }
 }

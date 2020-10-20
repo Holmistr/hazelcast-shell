@@ -3,6 +3,7 @@ package com.hazelcast.shell;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.shell.admin.AdminSubcommand;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
@@ -30,18 +31,22 @@ import java.nio.file.Paths;
  * Main command class for Hazelcast operations
  */
 @Command(name = "hz-cli", description = "HZ-CLI", versionProvider = VersionProvider.class, mixinStandardHelpOptions = true, sortOptions = false)
-class HazelcastShell {
+class HazelcastShell extends AbstractCommandLine {
 
-    final PrintStream out;
-    final PrintStream err;
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
 
     HazelcastShell(PrintStream out, PrintStream err) {
-        this.out = out;
-        this.err = err;
+        super(out, err);
     }
 
     public static void main(String[] args) throws IOException {
         runCommandLine(args);
+    }
+
+    @Override
+    public void run() {
+        out.println("Executing run!");
     }
 
     private static void runCommandLine(String[] args) throws IOException {
@@ -49,6 +54,7 @@ class HazelcastShell {
         PrintStream err = System.err;
 
         CommandLine cmd = new CommandLine(new HazelcastShell(out, err))
+                .addSubcommand("admin", new AdminSubcommand(out, err))
                 .setOut(createPrintWriter(out))
                 .setErr(createPrintWriter(err))
                 .setTrimQuotes(true)
