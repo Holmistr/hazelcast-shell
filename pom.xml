@@ -106,9 +106,6 @@
                             <archive>
                                 <manifest>
                                     <mainClass>com.hazelcast.shell.HazelcastShell</mainClass>
-                                    =======
-                                    <mainClass>com.hazelcast.shell.ShellCommands</mainClass>
-                                    >>>>>>> 181f7d7... initial support
                                 </manifest>
                             </archive>
                             <descriptors>

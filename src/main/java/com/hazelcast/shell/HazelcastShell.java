@@ -2,6 +2,8 @@ package com.hazelcast.shell;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.shell.admin.AdminSubcommand;
 import org.fusesource.jansi.AnsiConsole;
@@ -27,21 +29,41 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.hazelcast.client.HazelcastClient.newHazelcastClient;
+
 /**
  * Main command class for Hazelcast operations
  */
 @Command(name = "hz-cli", description = "HZ-CLI", versionProvider = VersionProvider.class, mixinStandardHelpOptions = true, sortOptions = false)
-class HazelcastShell extends AbstractCommandLine {
+public class HazelcastShell extends AbstractCommandLine {
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
 
-    HazelcastShell(PrintStream out, PrintStream err) {
+    private static HazelcastInstance client;
+
+    HazelcastShell(PrintStream out, PrintStream err, HazelcastInstance client) {
         super(out, err);
     }
 
     public static void main(String[] args) throws IOException {
-        runCommandLine(args);
+        getClient();
+
+        runCommandLine(args, client);
+
+        if (client != null) {
+            client.shutdown();
+        }
+    }
+
+    public static HazelcastInstance getClient() {
+        if (client == null) {
+            ClientConfig clientConfig = new ClientConfig();
+            clientConfig.setProperty("hazelcast.logging.type", "none");
+            client = newHazelcastClient(clientConfig);
+        }
+
+        return client;
     }
 
     @Override
@@ -49,11 +71,11 @@ class HazelcastShell extends AbstractCommandLine {
         out.println("Executing run!");
     }
 
-    private static void runCommandLine(String[] args) throws IOException {
+    private static void runCommandLine(String[] args, HazelcastInstance client) throws IOException {
         PrintStream out = System.out;
         PrintStream err = System.err;
 
-        CommandLine cmd = new CommandLine(new HazelcastShell(out, err))
+        CommandLine cmd = new CommandLine(new HazelcastShell(out, err, client))
                 .addSubcommand("admin", new AdminSubcommand(out, err))
                 .setOut(createPrintWriter(out))
                 .setErr(createPrintWriter(err))
@@ -62,23 +84,8 @@ class HazelcastShell extends AbstractCommandLine {
         cmd.execute(args);
     }
 
-    @Command(description = "Test command", mixinStandardHelpOptions = true, sortOptions = false)
-    void test(
-            @Option(names = {"-c", "--config"}, paramLabel = "<file>", description = "Use <file> for Hazelcast configuration. "
-                    + "Accepted formats are XML and YAML. ") String string)
-            throws IOException, InterruptedException {
-
-        HazelcastInstance client = HazelcastClient.newHazelcastClient(new ClientConfig());
-        client.getMap("test").put("key", "value");
-
-        out.println("Executed Start command." + client.getMap("test").get("key"));
-
-        client.shutdown();
-    }
-
     @Command(name = "connect", description = "Default command", mixinStandardHelpOptions = true, sortOptions = false)
-    void connect()
-            throws IOException, InterruptedException {
+    void connect() throws IOException, InterruptedException {
 
         AnsiConsole.systemInstall();
         try {

@@ -1,8 +1,8 @@
 package execution;
 
 
+import com.hazelcast.shell.HazelcastShell;
 import com.hazelcast.shell.context.Context;
-import com.hazelcast.shell.utils.Cluster;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "get", mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
@@ -14,7 +14,7 @@ public class Get implements Runnable {
 
     @Override
     public void run() {
-        Object val = Cluster.getClient().getMap(Context.name).get(key);
+        Object val = HazelcastShell.getClient().getMap(Context.name).get(key);
         System.out.println(val);
     }
 }

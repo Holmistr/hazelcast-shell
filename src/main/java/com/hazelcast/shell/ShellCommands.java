@@ -1,6 +1,5 @@
 package com.hazelcast.shell;
 
-import com.hazelcast.shell.utils.Cluster;
 import com.hazelcast.shell.context.Use;
 import execution.Get;
 import execution.Put;
@@ -19,12 +18,9 @@ import picocli.CommandLine;
 import picocli.CommandLine.*;
 import picocli.shell.jline3.PicocliCommands;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 public class ShellCommands {
 
@@ -39,7 +35,7 @@ public class ShellCommands {
                     ""},
             footer = {"", "Press Ctl-D to exit."},
             subcommands = {
-                    Use.class, Cluster.class, Get.class, Put.class, CommandLine.HelpCommand.class})
+                    Use.class, Get.class, Put.class, CommandLine.HelpCommand.class})
 
     static class CliCommands implements Runnable {
         LineReaderImpl reader;
