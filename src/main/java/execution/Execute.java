@@ -40,6 +40,6 @@ public class Execute extends AbstractCommand {
 
     @Override
     protected Context.Type type() {
-        return Context.Type.map;
+        return null;
     }
 }

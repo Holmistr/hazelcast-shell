@@ -10,7 +10,10 @@ import java.util.Objects;
 public abstract class AbstractCommand implements Runnable {
     @Override
     public void run() {
-        if (Objects.isNull(Context.name)) {
+        if (type() == null) {
+            doRun();
+            return;
+        } else if (Objects.isNull(Context.name)) {
             out().println(String.format("Select the datastructure first using \"%s %s <%s name>\"",
                     new CommandLine(new Use()).getCommandName(),
                     type(),
