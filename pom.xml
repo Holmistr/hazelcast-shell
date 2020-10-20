@@ -86,7 +86,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.hazelcast.commandline.HazelcastCommandLine</mainClass>
+                            <mainClass>com.hazelcast.shell.HazelcastShell</mainClass>
                         </manifest>
                     </archive>
                     <descriptors>
