@@ -3,10 +3,7 @@ package com.hazelcast.shell.context;
 import com.hazelcast.shell.ShellCommands;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "use",
-        mixinStandardHelpOptions = true,
-        subcommands = {CommandLine.HelpCommand.class},
-        description = "Choose data structure type and name")
+@CommandLine.Command(name = "use", description = "Select data structure to be used")
 public class Use implements Runnable {
 
     @CommandLine.Spec
@@ -20,6 +17,6 @@ public class Use implements Runnable {
 
     @Override
     public void run() {
-        parent.out.println(String.format("Using <%s> %s", Context.type, Context.name));
+        parent.out.println(String.format("Using %s %s", Context.type, Context.name));
     }
 }

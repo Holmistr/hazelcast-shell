@@ -28,6 +28,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.hazelcast.client.HazelcastClient.newHazelcastClient;
 
@@ -68,32 +70,15 @@ public class HazelcastShell extends AbstractCommandLine {
 
     @Override
     public void run() {
-        out.println("Executing run!");
-    }
-
-    private static void runCommandLine(String[] args, HazelcastInstance client) throws IOException {
-        PrintStream out = System.out;
-        PrintStream err = System.err;
-
-        CommandLine cmd = new CommandLine(new HazelcastShell(out, err, client))
-                .addSubcommand("admin", new AdminSubcommand(out, err))
-                .setOut(createPrintWriter(out))
-                .setErr(createPrintWriter(err))
-                .setTrimQuotes(true)
-                .setExecutionExceptionHandler(new ExceptionHandler());
-        cmd.execute(args);
-    }
-
-    @Command(name = "connect", description = "Default command", mixinStandardHelpOptions = true, sortOptions = false)
-    void connect() throws IOException, InterruptedException {
-
         AnsiConsole.systemInstall();
         try {
             // set up JLine built-in commands
-            Builtins builtins = new Builtins(workDir(), null, null);
-            builtins.rename(Builtins.Command.TTOP, "top");
-            builtins.alias("zle", "widget");
-            builtins.alias("bindkey", "keymap");
+            Set<Builtins.Command> onlyHistory = new HashSet<>();
+            onlyHistory.add(Builtins.Command.HISTORY);
+            Builtins builtins = new Builtins(onlyHistory, workDir(), null, null);
+//            builtins.rename(Builtins.Command.TTOP, "top");
+//            builtins.alias("zle", "widget");
+//            builtins.alias("bindkey", "keymap");
 
             // set up picocli commands
             ShellCommands.CliCommands commands = new ShellCommands.CliCommands();
@@ -117,7 +102,7 @@ public class HazelcastShell extends AbstractCommandLine {
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
                 keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
-                String prompt = "prompt> ";
+                String prompt = "#> ";
                 String rightPrompt = null;
 
                 // start the shell and process input until the user quits with Ctrl-D
@@ -141,6 +126,21 @@ public class HazelcastShell extends AbstractCommandLine {
         } finally {
             AnsiConsole.systemUninstall();
         }
+    }
+
+    private static void runCommandLine(String[] args, HazelcastInstance client) throws IOException {
+        PrintStream out = System.out;
+        PrintStream err = System.err;
+
+        out.println("Welcome to Hazelcast CLI interface. Start with typing 'help' command.");
+
+        CommandLine cmd = new CommandLine(new HazelcastShell(out, err, client))
+                .addSubcommand("admin", new AdminSubcommand(out, err))
+                .setOut(createPrintWriter(out))
+                .setErr(createPrintWriter(err))
+                .setTrimQuotes(true)
+                .setExecutionExceptionHandler(new ExceptionHandler());
+        cmd.execute(args);
     }
 
     private static PrintWriter createPrintWriter(PrintStream printStream) {

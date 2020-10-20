@@ -9,15 +9,12 @@ import picocli.CommandLine;
 import java.io.PrintWriter;
 
 
-@CommandLine.Command(name = "offer",
-        mixinStandardHelpOptions = true,
-        subcommands = {CommandLine.HelpCommand.class},
-        description = "offer item to queue")
+@CommandLine.Command(name = "offer", description = "Puts an item to the queue")
 public class Offer extends AbstractCommand {
     @CommandLine.ParentCommand
     ShellCommands.CliCommands parent;
 
-    @CommandLine.Parameters(index = "0")
+    @CommandLine.Parameters(index = "0", description = "Value to be put")
     private String value;
 
     @Override

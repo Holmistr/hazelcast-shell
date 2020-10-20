@@ -9,15 +9,12 @@ import picocli.CommandLine;
 import java.io.PrintWriter;
 
 
-@CommandLine.Command(name = "get",
-        mixinStandardHelpOptions = true,
-        subcommands = {CommandLine.HelpCommand.class},
-        description = "get")
+@CommandLine.Command(name = "get", description = "Get an entry from the map.")
 public class Get extends AbstractCommand {
     @CommandLine.ParentCommand
     ShellCommands.CliCommands parent;
 
-    @CommandLine.Parameters(index = "0")
+    @CommandLine.Parameters(index = "0", description = "Key of the map entry.")
     private String key;
 
     @Override

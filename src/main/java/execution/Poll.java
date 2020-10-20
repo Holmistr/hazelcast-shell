@@ -10,15 +10,11 @@ import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
 
 
-@CommandLine.Command(name = "poll",
-        mixinStandardHelpOptions = true,
-        subcommands = {CommandLine.HelpCommand.class},
-        description = "poll item from queue")
+@CommandLine.Command(name = "poll", description = "Polls an item from the queue")
 public class Poll extends AbstractCommand {
 
     @CommandLine.ParentCommand
     ShellCommands.CliCommands parent;
-
 
     @Override
     protected PrintWriter out() {
