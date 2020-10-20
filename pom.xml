@@ -129,7 +129,7 @@
                             <skip>false</skip>
                             <imageName>hazelcast-shell</imageName>
                             <buildArgs>
-                                -H:ReflectionConfigurationFiles=/home/jholusa/reflectionconfig
+                                -H:ReflectionConfigurationFiles=${pom.basedir}/reflectionconfig
                                 --no-fallback
                                 --allow-incomplete-classpath
                                 --report-unsupported-elements-at-runtime
