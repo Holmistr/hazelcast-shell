@@ -1,10 +1,7 @@
 package com.hazelcast.shell;
 
 import com.hazelcast.shell.context.Use;
-import execution.Get;
-import execution.Offer;
-import execution.Put;
-import execution.Poll;
+import execution.*;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
@@ -37,8 +34,17 @@ public class ShellCommands {
                             "Hit @|magenta <TAB>|@ to see available commands.",
                     "Hit @|magenta ALT-S|@ to toggle tailtips.",
                     ""},
-            footer = {"", "Press Ctl-D to exit."},
-            subcommands = {Use.class, Get.class, Put.class, Poll.class, Offer.class, CommandLine.HelpCommand.class})
+            footer = { "", "Press Ctl-D to exit." },
+            subcommands = {
+                    Use.class,
+                    Get.class,
+                    Put.class,
+                    Poll.class,
+                    Offer.class,
+                    Execute.class,
+                    Query.class,
+                    CommandLine.HelpCommand.class
+            })
     public static class CliCommands implements Runnable {
         public LineReaderImpl reader;
         public PrintWriter out;

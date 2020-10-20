@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,12 +44,15 @@ public class HazelcastShell extends AbstractCommandLine {
     CommandLine.Model.CommandSpec spec;
 
     private static HazelcastInstance client;
+    private static Parser parser;
 
     HazelcastShell(PrintStream out, PrintStream err, HazelcastInstance client) {
         super(out, err);
     }
 
     public static void main(String[] args) throws IOException {
+        System.out.println("Printing the arguments: " + Arrays.asList(args));
+
         getClient();
 
         runCommandLine(args, client);
@@ -85,7 +89,8 @@ public class HazelcastShell extends AbstractCommandLine {
             CommandLine cmd = new CommandLine(commands);
             PicocliCommands picocliCommands = new PicocliCommands(HazelcastShell::workDir, cmd);
 
-            Parser parser = new DefaultParser();
+            parser = new DefaultParser();
+
             try (Terminal terminal = TerminalBuilder.builder().build()) {
                 SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, HazelcastShell::workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
