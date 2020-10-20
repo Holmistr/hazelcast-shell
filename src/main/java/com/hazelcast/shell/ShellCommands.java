@@ -2,7 +2,9 @@ package com.hazelcast.shell;
 
 import com.hazelcast.shell.context.Use;
 import execution.Get;
+import execution.Offer;
 import execution.Put;
+import execution.Take;
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
@@ -21,25 +23,25 @@ import picocli.shell.jline3.PicocliCommands;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ShellCommands {
 
     /**
      * Top-level command that just prints help.
      */
-    @Command(name = "",
+    @Command(name = "cmd",
             description = {
                     "Example interactive shell with completion and autosuggestions. " +
                             "Hit @|magenta <TAB>|@ to see available commands.",
                     "Hit @|magenta ALT-S|@ to toggle tailtips.",
                     ""},
             footer = {"", "Press Ctl-D to exit."},
-            subcommands = {
-                    Use.class, Get.class, Put.class, CommandLine.HelpCommand.class})
-
-    static class CliCommands implements Runnable {
-        LineReaderImpl reader;
-        PrintWriter out;
+            subcommands = {Use.class, Get.class, Put.class, Take.class, Offer.class, CommandLine.HelpCommand.class})
+    public static class CliCommands implements Runnable {
+        public LineReaderImpl reader;
+        public PrintWriter out;
 
         CliCommands() {
         }
@@ -59,14 +61,17 @@ public class ShellCommands {
     }
 
 
+    @SuppressWarnings("Duplicates")
     public static void main(String[] args) {
         AnsiConsole.systemInstall();
         try {
             // set up JLine built-in commands
-            Builtins builtins = new Builtins(workDir(), null, null);
-            builtins.rename(Builtins.Command.TTOP, "top");
-            builtins.alias("zle", "widget");
-            builtins.alias("bindkey", "keymap");
+            Set<Builtins.Command> onlyHistory = new HashSet<>();
+            onlyHistory.add(Builtins.Command.HISTORY);
+            Builtins builtins = new Builtins(onlyHistory, workDir(), null, null);
+//            builtins.rename(Builtins.Command.TTOP, "top");
+//            builtins.alias("zle", "widget");
+//            builtins.alias("bindkey", "keymap");
 
             // set up picocli commands
             ShellCommands.CliCommands commands = new ShellCommands.CliCommands();

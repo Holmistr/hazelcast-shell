@@ -8,18 +8,16 @@ import picocli.CommandLine;
 
 import java.io.PrintWriter;
 
-@CommandLine.Command(name = "put",
+
+@CommandLine.Command(name = "offer",
         mixinStandardHelpOptions = true,
         subcommands = {CommandLine.HelpCommand.class},
-        description = "put")
-public class Put extends AbstractCommand {
+        description = "offer item to queue")
+public class Offer extends AbstractCommand {
     @CommandLine.ParentCommand
     ShellCommands.CliCommands parent;
 
     @CommandLine.Parameters(index = "0")
-    private String key;
-
-    @CommandLine.Parameters(index = "1")
     private String value;
 
     @Override
@@ -29,12 +27,12 @@ public class Put extends AbstractCommand {
 
     @Override
     protected void doRun() {
-        Object oldValue = HazelcastShell.getClient().getMap(Context.name).put(key, value);
-        parent.out.println(oldValue);
+        boolean result = HazelcastShell.getClient().getQueue(Context.name).offer(value);
+        parent.out.println(result);
     }
 
     @Override
     protected Context.Type type() {
-        return Context.Type.map;
+        return Context.Type.queue;
     }
 }
