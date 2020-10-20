@@ -52,6 +52,12 @@
             <version>${jline.version}</version>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>org.jline</groupId>-->
+<!--            <artifactId>jline-terminal-jansi</artifactId>-->
+<!--            <version>${jline.version}</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
@@ -132,6 +138,7 @@
                             <imageName>hazelcast-shell</imageName>
                             <buildArgs>
                                 -H:ReflectionConfigurationFiles=${pom.basedir}/reflectionconfig
+                                -H:ResourceConfigurationFiles=${pom.basedir}/resourcesconfig
                                 --no-fallback
                                 --allow-incomplete-classpath
                                 --report-unsupported-elements-at-runtime
