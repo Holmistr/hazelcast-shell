@@ -1,12 +1,28 @@
 package com.hazelcast.shell;
 
-import org.jline.reader.LineReader;
+import com.hazelcast.shell.utils.Cluster;
+import com.hazelcast.shell.context.Use;
+import execution.Get;
+import execution.Put;
+import org.fusesource.jansi.AnsiConsole;
+import org.jline.console.SystemRegistry;
+import org.jline.console.impl.Builtins;
+import org.jline.console.impl.SystemRegistryImpl;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.*;
+import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
+import picocli.shell.jline3.PicocliCommands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -23,15 +39,17 @@ public class ShellCommands {
                     ""},
             footer = {"", "Press Ctl-D to exit."},
             subcommands = {
-                    MyCommand.class, ClearScreen.class, CommandLine.HelpCommand.class})
+                    Use.class, Cluster.class, Get.class, Put.class, CommandLine.HelpCommand.class})
+
     static class CliCommands implements Runnable {
         LineReaderImpl reader;
         PrintWriter out;
 
-        CliCommands() {}
+        CliCommands() {
+        }
 
-        public void setReader(LineReader reader){
-            this.reader = (LineReaderImpl)reader;
+        public void setReader(LineReader reader) {
+            this.reader = (LineReaderImpl) reader;
             out = reader.getTerminal().writer();
         }
 
@@ -40,87 +58,65 @@ public class ShellCommands {
         }
     }
 
-    /**
-     * A command with some options to demonstrate completion.
-     */
-    @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
-            description = {"Command with some options to demonstrate TAB-completion.",
-                    " (Note that enum values also get completed.)"},
-            subcommands = {Nested.class, CommandLine.HelpCommand.class})
-    static class MyCommand implements Runnable {
-        @Option(names = {"-v", "--verbose"},
-                description = { "Specify multiple -v options to increase verbosity.",
-                        "For example, `-v -v -v` or `-vvv`"})
-        private boolean[] verbosity = {};
+    private static Path workDir() {
+        return Paths.get(System.getProperty("user.dir"));
+    }
 
-        @ArgGroup(exclusive = false)
-        private MyDuration myDuration = new MyDuration();
 
-        static class MyDuration {
-            @Option(names = {"-d", "--duration"},
-                    description = "The duration quantity.",
-                    required = true)
-            private int amount;
+    public static void main(String[] args) {
+        AnsiConsole.systemInstall();
+        try {
+            // set up JLine built-in commands
+            Builtins builtins = new Builtins(workDir(), null, null);
+            builtins.rename(Builtins.Command.TTOP, "top");
+            builtins.alias("zle", "widget");
+            builtins.alias("bindkey", "keymap");
 
-            @Option(names = {"-u", "--timeUnit"},
-                    description = "The duration time unit.",
-                    required = true)
-            private TimeUnit unit;
-        }
+            // set up picocli commands
+            ShellCommands.CliCommands commands = new ShellCommands.CliCommands();
+            CommandLine cmd = new CommandLine(commands);
+            PicocliCommands picocliCommands = new PicocliCommands(ShellCommands::workDir, cmd);
 
-        @ParentCommand CliCommands parent;
+            Parser parser = new DefaultParser();
+            try (Terminal terminal = TerminalBuilder.builder().build()) {
+                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, ShellCommands::workDir, null);
+                systemRegistry.setCommandRegistries(builtins, picocliCommands);
 
-        public void run() {
-            if (verbosity.length > 0) {
-                parent.out.printf("Hi there. You asked for %d %s.%n",
-                        myDuration.amount, myDuration.unit);
-            } else {
-                parent.out.println("hi!");
+                LineReader reader = LineReaderBuilder.builder()
+                        .terminal(terminal)
+                        .completer(systemRegistry.completer())
+                        .parser(parser)
+                        .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
+                        .build();
+                builtins.setLineReader(reader);
+                commands.setReader(reader);
+                new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
+                KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
+                keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
+
+                String prompt = "prompt> ";
+                String rightPrompt = null;
+
+                // start the shell and process input until the user quits with Ctrl-D
+                String line;
+                while (true) {
+                    try {
+                        systemRegistry.cleanUp();
+                        line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
+                        systemRegistry.execute(line);
+                    } catch (UserInterruptException e) {
+                        // Ignore
+                    } catch (EndOfFileException e) {
+                        return;
+                    } catch (Exception e) {
+                        systemRegistry.trace(e);
+                    }
+                }
             }
-        }
-    }
-
-    @Command(name = "nested", mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-            description = "Hosts more sub-subcommands")
-    static class Nested implements Runnable {
-        public void run() {
-            System.out.println("I'm a nested subcommand. I don't do much, but I have sub-subcommands!");
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Multiplies two numbers.")
-        public void multiply(@Option(names = {"-l", "--left"}, required = true) int left,
-                             @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d * %d = %d%n", left, right, left * right);
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Adds two numbers.")
-        public void add(@Option(names = {"-l", "--left"}, required = true) int left,
-                        @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d + %d = %d%n", left, right, left + right);
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Subtracts two numbers.")
-        public void subtract(@Option(names = {"-l", "--left"}, required = true) int left,
-                             @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d - %d = %d%n", left, right, left - right);
-        }
-    }
-
-    /**
-     * Command that clears the screen.
-     */
-    @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
-            description = "Clears the screen", version = "1.0")
-    static class ClearScreen implements Callable<Void> {
-
-        @ParentCommand CliCommands parent;
-
-        public Void call() throws IOException {
-            parent.reader.clearScreen();
-            return null;
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            AnsiConsole.systemUninstall();
         }
     }
 }
