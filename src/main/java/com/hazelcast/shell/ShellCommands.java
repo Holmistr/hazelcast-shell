@@ -2,26 +2,12 @@ package com.hazelcast.shell;
 
 import com.hazelcast.shell.context.Use;
 import execution.*;
-import org.fusesource.jansi.AnsiConsole;
-import org.jline.console.SystemRegistry;
-import org.jline.console.impl.Builtins;
-import org.jline.console.impl.SystemRegistryImpl;
-import org.jline.keymap.KeyMap;
 import org.jline.reader.*;
-import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
-import picocli.shell.jline3.PicocliCommands;
 
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ShellCommands {
 
@@ -41,7 +27,8 @@ public class ShellCommands {
                     Put.class,
                     Poll.class,
                     Offer.class,
-                    Execute.class,
+                    ExecuteTask.class,
+                    ExecuteOnEntry.class,
                     Query.class,
                     CommandLine.HelpCommand.class
             })

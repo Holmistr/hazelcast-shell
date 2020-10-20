@@ -10,8 +10,8 @@ import picocli.CommandLine;
 
 import java.io.PrintWriter;
 
-@CommandLine.Command(name = "execute", description = "Execute Kotlin script")
-public class Execute extends AbstractCommand {
+@CommandLine.Command(name = "execute-task", description = "Execute Kotlin script")
+public class ExecuteTask extends AbstractCommand {
     @CommandLine.ParentCommand
     ShellCommands.CliCommands parent;
 

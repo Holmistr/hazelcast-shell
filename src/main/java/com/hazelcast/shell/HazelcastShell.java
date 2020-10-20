@@ -57,6 +57,7 @@ public class HazelcastShell extends AbstractCommandLine {
     public static HazelcastInstance getClient() {
         if (client == null) {
             ClientConfig clientConfig = new ClientConfig();
+            clientConfig.setClusterName("jet");
             clientConfig.setProperty("hazelcast.logging.type", "none");
             client = newHazelcastClient(clientConfig);
         }
