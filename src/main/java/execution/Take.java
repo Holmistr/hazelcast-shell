@@ -7,6 +7,7 @@ import com.hazelcast.shell.context.Context;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
 
 
 @CommandLine.Command(name = "take",
@@ -27,7 +28,7 @@ public class Take extends AbstractCommand {
     @Override
     protected void doRun() {
         try {
-            Object result = HazelcastShell.getClient().getQueue(Context.name).take();
+            Object result = HazelcastShell.getClient().getQueue(Context.name).poll(250, TimeUnit.MILLISECONDS);
             parent.out.println(result);
         } catch (InterruptedException e) {
             parent.out.println(e.getMessage());
