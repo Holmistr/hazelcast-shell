@@ -28,30 +28,35 @@ public class Query extends AbstractCommand {
 
     @Override
     protected void doRun() {
+        query = query.replaceAll("\\\\'", "'");
+
         int i = 0;
         try (SqlResult result = HazelcastShell.getClient().getSql().execute(query)) {
-            CommandLineTable table = new CommandLineTable(parent.out);
-            //st.setRightAlign(true);//if true then cell text is right aligned
-            table.setShowVerticalLines(true);//if false (default) then no vertical lines are shown
+            if (!result.isRowSet()) {
+                parent.out.println("OK");
+            } else {
+                CommandLineTable table = new CommandLineTable(parent.out);
+                //st.setRightAlign(true);//if true then cell text is right aligned
+                table.setShowVerticalLines(true);//if false (default) then no vertical lines are shown
 
-            for (SqlRow row : result) {
-                if (i == 0) {
-                    table.setHeaders(row.getMetadata().getColumns().stream().map(column -> column.getName()).collect(Collectors.<String>toList()).toArray(new String[]{}));
+                for (SqlRow row : result) {
+                    if (i == 0) {
+                        table.setHeaders(row.getMetadata().getColumns().stream().map(column -> column.getName()).collect(Collectors.<String>toList()).toArray(new String[]{}));
+                    }
+
+                    int columnCount = row.getMetadata().getColumnCount();
+                    String[] cells = new String[columnCount];
+                    for (int j = 0; j < columnCount; j++) {
+                        cells[j] = row.getObject(j).toString();
+                    }
+
+                    table.addRow(cells);
+
+                    i++;
                 }
 
-
-                int columnCount = row.getMetadata().getColumnCount();
-                String[] cells = new String[columnCount];
-                for (int j = 0; j < columnCount; j++) {
-                    cells[j] = row.getObject(j).toString();
-                }
-
-                table.addRow(cells);
-
-                i++;
+                table.print();
             }
-
-            table.print();
         }
 
         parent.out.println("Number of results: " + i);
