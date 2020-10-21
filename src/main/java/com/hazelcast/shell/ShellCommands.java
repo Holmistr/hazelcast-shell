@@ -30,6 +30,7 @@ public class ShellCommands {
                     ExecuteTask.class,
                     ExecuteOnEntry.class,
                     Query.class,
+                    EnableDiagnostics.class,
                     CommandLine.HelpCommand.class
             })
     public static class CliCommands implements Runnable {
